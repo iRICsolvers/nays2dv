@@ -1443,7 +1443,7 @@
       real(8),dimension(ni)::yg_bed
       real(8),dimension(ni-1,nj-1)::t_cell,c_cell,p_cell
       real(8)::dudy,dvdx
-      integer::ier
+      integer::fid,ier
       integer::num=0
       real(8)::sum_p,sum_t,sum_c 
 
@@ -1510,36 +1510,38 @@
 !     write(133) ((tx(i,j),i=1,nx-1),j=0,ny)
 !     write(133) ((cx(i,j),i=1,nx-1),j=0,ny)
 
-      call cg_iric_write_sol_time_f(time,ier)
-      call cg_iric_write_sol_baseiterative_real_f ("Input Discharge",qp0,ier)
-      call cg_iric_write_sol_baseiterative_real_f ("Averageed Discharge",q_ave,ier)
-      call cg_iric_write_sol_baseiterative_real_f &
-        ("Upstream Water Surface Elevation ",h_up_boundary,ier)
-      call cg_iric_write_sol_baseiterative_real_f &
-        ("Downstream Water Surface Elevation ",h_down,ier)
-      call cg_iric_write_sol_baseiterative_real_f &
-        ("Upstream calculated discharge",qc(1),ier)
-      call cg_iric_write_sol_baseiterative_real_f &
-        ("Downstream calculated discharge",qc(nx-1),ier)
-      call cg_iric_write_sol_baseiterative_real_f ("Volume",t_vol,ier)
-      call cg_iric_write_sol_baseiterative_real_f &
-       ("Average Depth",hs_ave_c,ier)
-      call cg_iric_write_sol_baseiterative_real_f &
-       ("Average Velocity",u_ave_c,ier)
-      call cg_iric_write_sol_gridcoord2d_f(xg,yg,ier)
-      call CG_IRIC_WRITE_SOL_REAL_F("VelocityX",ug,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("VelocityY",vg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("Pressure",pg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("Temperature",tg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("Concentrartion",cg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("Vorticity",vorg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("Depth",hsg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("Water surface elevation",hg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("Dischare per unit width",qcg,IER)
-      call CG_IRIC_WRITE_SOL_REAL_F("X-Velocity",ug,IER)
-      call cg_iric_write_sol_cell_real_f("P_cell",p_cell,ier)
-      call cg_iric_write_sol_cell_real_f("T_cell",t_cell,ier)
-      call cg_iric_write_sol_cell_real_f("C_cell",c_cell,ier)
+      call cg_iric_write_sol_start(fid)
+      call cg_iric_write_sol_time(fid,time,ier)
+      call cg_iric_write_sol_baseiterative_real(fid,"Input Discharge",qp0,ier)
+      call cg_iric_write_sol_baseiterative_real(fid,"Averageed Discharge",q_ave,ier)
+      call cg_iric_write_sol_baseiterative_real&
+        (fid,"Upstream Water Surface Elevation ",h_up_boundary,ier)
+      call cg_iric_write_sol_baseiterative_real&
+        (fid,"Downstream Water Surface Elevation ",h_down,ier)
+      call cg_iric_write_sol_baseiterative_real&
+        (fid,"Upstream calculated discharge",qc(1),ier)
+      call cg_iric_write_sol_baseiterative_real&
+        (fid,"Downstream calculated discharge",qc(nx-1),ier)
+      call cg_iric_write_sol_baseiterative_real(fid,"Volume",t_vol,ier)
+      call cg_iric_write_sol_baseiterative_real&
+       (fid,"Average Depth",hs_ave_c,ier)
+      call cg_iric_write_sol_baseiterative_real&
+       (fid,"Average Velocity",u_ave_c,ier)
+      call cg_iRIC_Write_Sol_Grid2d_Coords(fid,xg,yg,ier)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"VelocityX",ug,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"VelocityY",vg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"Pressure",pg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"Temperature",tg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"Concentrartion",cg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"Vorticity",vorg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"Depth",hsg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"Water surface elevation",hg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"Dischare per unit width",qcg,IER)
+      call cg_iRIC_Write_Sol_Node_Real(fid,"X-Velocity",ug,IER)
+      call cg_iric_write_sol_cell_real(fid,"P_cell",p_cell,ier)
+      call cg_iric_write_sol_cell_real(fid,"T_cell",t_cell,ier)
+      call cg_iric_write_sol_cell_real(fid,"C_cell",c_cell,ier)
+      call cg_iric_write_sol_end(fid)
       end subroutine output
       end module output_m
  
@@ -1826,11 +1828,9 @@
       use output_m
       use shift_m
       use v12cal_m
+      use iric
 
       implicit none
-
-      include 'cgnslib_f.h'
-      include 'iriclib_f.h'
 
       integer, parameter :: strMax = 1000
       character(len = strMax) :: condFile
@@ -1925,24 +1925,20 @@
 
 !==========================================================
 ! 格子生成データファイルを開く
-      call cg_open_f("./nays2dv/iRICZone/gridcreate.cgn", CG_MODE_READ, fin, ier)
+      call cg_iric_open("./nays2dv/iRICZone/gridcreate.cgn", IRIC_MODE_MODIFY, fin, ier)
       if (ier /=0) stop "*** Open error of CGNS file ***"
-
-! 内部変数の初期化。戻り値は 1 になるが問題ない。
-      call cg_iric_init_f(fin, ier)
-
 
 !--- Read from grid generator file -----
 !  格子生成条件データファイルからの読み出し
-      call cg_iric_read_real_f('h0', hs_ave, ier)
-      call cg_iric_read_real_f('b_slope', slope, ier)
-      call cg_iric_read_integer_f('j_bottom_shape',j_bottom_shape, ier)
-      call cg_iric_read_real_f('dune_height',dune_height, ier)
+      call cg_iric_read_real(fin,'h0', hs_ave, ier)
+      call cg_iric_read_real(fin,'b_slope', slope, ier)
+      call cg_iric_read_integer(fin,'j_bottom_shape',j_bottom_shape, ier)
+      call cg_iric_read_real(fin,'dune_height',dune_height, ier)
 !     if(j_bottom_shape==2) hs_ave=hs_ave+dune_height/2.
 
 !     write(*,'(a8,3f10.5)') 'h,slope=',hs_ave,slope,dune_height
 
-       call cg_close_f(fin, ier)
+       call cg_iric_close(fin, ier)
 !=========================================================
 
       ircount = nargs()
@@ -1954,25 +1950,25 @@
       end if
 
 ! 計算データファイルを開く
-      call cg_open_f(condFile,CG_MODE_MODIFY, fid, ier)
+      call cg_iric_open(condFile,IRIC_MODE_MODIFY, fid, ier)
       if (ier /=0) then
        write(*,*) "*** Open error of CGNS file ***"
       end if
  
 ! iRIClib の初期化
-      call cg_iric_init_f(fid, ier)
+      call cg_iric_init(fid, ier)
 !
 !guiにcgnsファイルを読込みであることを知らせるファイルを生成
-      call iric_initoption_f(IRIC_OPTION_CANCEL, ier)
+      call iric_initoption(IRIC_OPTION_CANCEL, ier)
 
 !
 ! 2次元格子データーのサイズを読み込む ni,nj
 !
-      call cg_iric_gotogridcoord2d_f(ni, nj, ier)
+      call cg_iRIC_Read_Grid2d_Str_Size(fid,ni, nj, ier)
 !     write(*,*) 'ni,nj=',ni,nj
 
       if (ier /=0) then
-       write(*,*) "*** error:cg_iric_gotogridcoord2d_f ***"
+       write(*,*) "*** error:cg_iRIC_Read_Grid2d_Str_Size_f ***"
        stop
       end if
 !     
@@ -1982,7 +1978,7 @@
 
 
 ! 2次元格子データーを読み込む xg(ni,nj),yg(ni,nj)
-      call cg_iric_getgridcoord2d_f(xg,yg,ier)
+      call cg_iRIC_Read_Grid2d_Coords(fid,xg,yg,ier)
 
 !     write(44,*) 'Grid Data'
 !     do i=1,ni
@@ -1991,24 +1987,24 @@
 !     end do
 !
       if (ier /=0) then
-       write(*,*) "*** error:cg_iric_getgridcoord2d_f ***"
+       write(*,*) "*** error:cg_iRIC_Read_Grid2d_Coords_f ***"
        stop
       end if
 ! 仮想・河床データの読み込み
-      call cg_iric_read_grid_real_node_f("Elevation",zg,ier)
+      call cg_iric_read_grid_real_node(fid,"Elevation",zg,ier)
       if (ier /=0) then
        write(*,*) "error:cg_iric_read_grid_real_node_f-Elevation "
        stop
       end if
 
 ! 初期密度・温度データの読み込み
-      call cg_iric_read_grid_real_cell_f('Ini_tmp',tg,ier)      
+      call cg_iric_read_grid_real_cell(fid,'Ini_tmp',tg,ier)      
       if(ier /=0) stop
-      call cg_iric_read_grid_real_cell_f('Ini_con',cg,ier)      
+      call cg_iric_read_grid_real_cell(fid,'Ini_con',cg,ier)      
       if(ier /=0) stop
 
 ! 障害物セルデータの読み込み
-      call cg_iric_read_grid_integer_cell_f('Obstacle',obs_g,ier)      
+      call cg_iric_read_grid_integer_cell(fid,'Obstacle',obs_g,ier)      
       if(ier /=0) stop
 
 
@@ -2018,11 +2014,11 @@
 !      end do
 !     end do
 
-      call cg_iric_read_integer_f('j_bcv',j_bcv,ier)
+      call cg_iric_read_integer(fid,'j_bcv',j_bcv,ier)
 !  j_ccv 0=Min, 1=Max, 2=Average, 3=Give
       if(j_bcv == 3) then
-       call cg_iric_read_real_f('tmp0',tmp0,ier)
-       call cg_iric_read_real_f('con0',con0,ier)
+       call cg_iric_read_real(fid,'tmp0',tmp0,ier)
+       call cg_iric_read_real(fid,'con0',con0,ier)
       end if
 
 ! 背景温度・背景濃度tmp0,con0の計算
@@ -2080,58 +2076,58 @@
 
 !--- Read Computational Parameters  -----
 
-      call cg_iric_read_integer_f('j_dens',j_dens0,ier)
-      call cg_iric_read_real_f('st_dens',st_dens,ier)
+      call cg_iric_read_integer(fid,'j_dens',j_dens0,ier)
+      call cg_iric_read_real(fid,'st_dens',st_dens,ier)
 !      
-      call cg_iric_read_integer_f('j_temp',j_temp0,ier)
-      call cg_iric_read_real_f('st_temp',st_temp,ier)
+      call cg_iric_read_integer(fid,'j_temp',j_temp0,ier)
+      call cg_iric_read_real(fid,'st_temp',st_temp,ier)
 
-      call cg_iric_read_integer_f('j_uadvec',j_uadvec,ier)
+      call cg_iric_read_integer(fid,'j_uadvec',j_uadvec,ier)
 ! j_uadvec=1; CIP Scheme
 ! j_uadvec=2; Upwind Scheme
-      call cg_iric_read_integer_f('j_cadvec',j_cadvec,ier)
+      call cg_iric_read_integer(fid,'j_cadvec',j_cadvec,ier)
 ! j_cadvec=1; Density CIP Scheme
 ! j_cadvec=2; Density Upwind Scheme
-      call cg_iric_read_integer_f('j_bound',j_bound,ier)
+      call cg_iric_read_integer(fid,'j_bound',j_bound,ier)
 ! j_bound=1; closed  
 ! j_bound=2; open
 ! j_bound=3; upstream open and downstream closed
 ! j_bound=4; downstream open and upstream closed
 
-      call cg_iric_read_integer_f('j_periodic',j_periodic,ier)
+      call cg_iric_read_integer(fid,'j_periodic',j_periodic,ier)
 ! j_periodic=0; non periodic open channel
 ! j_periodic=1; periodic bundary
 
       qp=0.; qp0=0.; q_stt=0.; q_trn=0.
       if(j_bound==2) then
-       call cg_iric_read_integer_f('j_qgive',j_qgive,ier)
+       call cg_iric_read_integer(fid,'j_qgive',j_qgive,ier)
        if(j_qgive==1) then
-        call cg_iric_read_real_f('qp',qp,ier)
-        call cg_iric_read_integer_f('j_qadj',j_qadj,ier)
-        call cg_iric_read_real_f('q_relax',q_relax,ier)
-        call cg_iric_read_real_f('q_stt',q_stt,ier)
-        call cg_iric_read_real_f('q_trn',q_trn,ier)
+        call cg_iric_read_real(fid,'qp',qp,ier)
+        call cg_iric_read_integer(fid,'j_qadj',j_qadj,ier)
+        call cg_iric_read_real(fid,'q_relax',q_relax,ier)
+        call cg_iric_read_real(fid,'q_stt',q_stt,ier)
+        call cg_iric_read_real(fid,'q_trn',q_trn,ier)
        end if
       end if
 
       if(j_bound==1 .or. j_bound==3) j_hdw=3
       if((j_bound==2 .and. j_periodic==0).or. j_bound==4) then
 !下流水位の条件
-       call cg_iric_read_integer_f('j_hdw',j_hdw,ier)
+       call cg_iric_read_integer(fid,'j_hdw',j_hdw,ier)
 ! 下流端水位条件 1==一定, 2==Sine波形, 3==自由(dH/dx=0)
        if(j_hdw==1) then
-        call cg_iric_read_integer_f('j_set_hdw',j_set_hdw,ier)
+        call cg_iric_read_integer(fid,'j_set_hdw',j_set_hdw,ier)
 ! 一定値の条件 0==初期条件と同じ, 1==値の入力
         if(j_set_hdw==1) then
-         call cg_iric_read_real_f('h_down_given',h_down_given,ier)
+         call cg_iric_read_real(fid,'h_down_given',h_down_given,ier)
 ! 下流端水位の値
         end if
        else if(j_hdw==2) then
 ! Sine波形の
-        call cg_iric_read_real_f('hd_amp',hd_amp,ier) !波高
-        call cg_iric_read_real_f('hd_wl',hd_wl,ier) !波長
-        call cg_iric_read_real_f('hd_st',hd_st,ier) !開始時刻
-        call cg_iric_read_real_f('hd_ap',hd_ap,ier) !開始時刻
+        call cg_iric_read_real(fid,'hd_amp',hd_amp,ier) !波高
+        call cg_iric_read_real(fid,'hd_wl',hd_wl,ier) !波長
+        call cg_iric_read_real(fid,'hd_st',hd_st,ier) !開始時刻
+        call cg_iric_read_real(fid,'hd_ap',hd_ap,ier) !開始時刻
        end if
       end if
       if(j_bound==1 .or. j_bound==4) j_hup=3
@@ -2141,61 +2137,61 @@
        hu_amp=0.;hu_wl=0.;hu_st=0.;hu_ap=0.
       else if((j_bound==2 .and. j_periodic==0).or. j_bound==3) then
 !上流水位の条件
-       call cg_iric_read_integer_f('j_hup',j_hup,ier)
+       call cg_iric_read_integer(fid,'j_hup',j_hup,ier)
 !上流水位の条件　1=一定， 2=Sine波, 3=自由(dH/dx=0)
        if(j_hup==1) then
-        call cg_iric_read_integer_f('j_set_hup',j_set_hup,ier)
+        call cg_iric_read_integer(fid,'j_set_hup',j_set_hup,ier)
 ! 一定値の条件 0==初期条件と同じ, 1==値の入力
         if(j_set_hup==1) then
-         call cg_iric_read_real_f('h_up_given',h_up_given,ier)
+         call cg_iric_read_real(fid,'h_up_given',h_up_given,ier)
 ! 上流端水位の値
         end if
        else if(j_hup==2) then
 ! Sine波形の
-        call cg_iric_read_real_f('hu_amp',hu_amp,ier) !波高
-        call cg_iric_read_real_f('hu_wl',hu_wl,ier) !波長
-        call cg_iric_read_real_f('hu_st',hu_st,ier) !開始時刻
-        call cg_iric_read_real_f('hu_ap',hu_ap,ier) !開始時刻
+        call cg_iric_read_real(fid,'hu_amp',hu_amp,ier) !波高
+        call cg_iric_read_real(fid,'hu_wl',hu_wl,ier) !波長
+        call cg_iric_read_real(fid,'hu_st',hu_st,ier) !開始時刻
+        call cg_iric_read_real(fid,'hu_ap',hu_ap,ier) !開始時刻
        end if
       end if
 
-      call cg_iric_read_real_f('diam',diam,ier)
-      call cg_iric_read_integer_f('j_snu',j_snu,ier)
-      call cg_iric_read_real_f('al_ep',al_ep,ier)
+      call cg_iric_read_real(fid,'diam',diam,ier)
+      call cg_iric_read_integer(fid,'j_snu',j_snu,ier)
+      call cg_iric_read_real(fid,'al_ep',al_ep,ier)
 
 
-      call cg_iric_read_real_f('tuk',tuk,ier)
-      call cg_iric_read_real_f('etime',etime,ier)
-      call cg_iric_read_real_f('dt',dt,ier)
+      call cg_iric_read_real(fid,'tuk',tuk,ier)
+      call cg_iric_read_real(fid,'etime',etime,ier)
+      call cg_iric_read_real(fid,'dt',dt,ier)
 !     write(*,'(3f10.5)') tuk,etime,dt
-      call cg_iric_read_real_f('sorerr',sorerr,ier)
-      call cg_iric_read_integer_f('lsor',lsor,ier)
+      call cg_iric_read_real(fid,'sorerr',sorerr,ier)
+      call cg_iric_read_integer(fid,'lsor',lsor,ier)
 ! lsor=sorの反復回数(5回程度) ----------
-      call cg_iric_read_real_f('soralpha',soralpha,ier)
+      call cg_iric_read_real(fid,'soralpha',soralpha,ier)
 ! soralpha = sor法の緩和回数(=1.5で加速緩和) ------
 !     write(*,'(f10.5,i5,f10.5)') sorerr,lsor,soralpha
 
-      call cg_iric_read_integer_f('j_surf',j_surf,ier)
+      call cg_iric_read_integer(fid,'j_surf',j_surf,ier)
 ! 自由水面計算 j_surf=1 (Yes)  j_suef=0 (no)
 ! j_surf=0--->固定水面
-      call cg_iric_read_real_f('alpha_surf',alpha_surf,ier)
-      call cg_iric_read_real_f('stime_surf',stime_surf,ier)
+      call cg_iric_read_real(fid,'alpha_surf',alpha_surf,ier)
+      call cg_iric_read_real(fid,'stime_surf',stime_surf,ier)
 
 !     write(*,*) tuk,etime,dt,sorerr,lsor,soralpha,j_surf
 
-      call cg_iric_read_integer_f('hloop',hloop,ier)
+      call cg_iric_read_integer(fid,'hloop',hloop,ier)
 ! 自由水面計算 繰り返し回数
       if(j_surf==0) hloop=1
 
-      call cg_iric_read_real_f('hloop_err',hloop_err,ier)
+      call cg_iric_read_real(fid,'hloop_err',hloop_err,ier)
 ! 自由水面計算 繰り返し計算打ち切り誤差
      
-      call cg_iric_read_real_f('snu',snu,ier)
-      call cg_iric_read_real_f('skt',skt,ier)
-      call cg_iric_read_real_f('skc',skc,ier)
-      call cg_iric_read_real_f('beta_t',beta_t,ier)
-      call cg_iric_read_real_f('rho',rho,ier)
-      call cg_iric_read_real_f('surf_tension',surf_tension,ier)
+      call cg_iric_read_real(fid,'snu',snu,ier)
+      call cg_iric_read_real(fid,'skt',skt,ier)
+      call cg_iric_read_real(fid,'skc',skc,ier)
+      call cg_iric_read_real(fid,'beta_t',beta_t,ier)
+      call cg_iric_read_real(fid,'rho',rho,ier)
+      call cg_iric_read_real(fid,'surf_tension',surf_tension,ier)
 
 
 !     write(*,'(7e12.3)') snu,skt,skc,beta_t,rho,surf_tension
@@ -2205,11 +2201,11 @@
 ! ---------------------------------------------------
 !     write(44,*) 'ni,nj=',ni,nj
 ! 温度 j_in 境界条件の個数
-      call cg_iric_read_bc_count_f('b_tmp',j_in)
+      call cg_iric_read_bc_count(fid,'b_tmp',j_in)
 !     write(44,*) 'j_in=',j_in
 ! ---------------------------------------------------
 ! 濃度 j_in_c 境界条件の個数
-      call cg_iric_read_bc_count_f('b_con',jc_in)
+      call cg_iric_read_bc_count(fid,'b_con',jc_in)
 !     write(44,*) 'jc_in=',jc_in
 ! ---------------------------------------------------
 
@@ -2223,10 +2219,10 @@
       indexmax = 0 ! max of j_inlen(i)
 
       do i = 1, j_in
-       call cg_iric_read_bc_indicessize_f('b_tmp',i,j_inlen(i),ier)
+       call cg_iric_read_bc_indicessize(fid,'b_tmp',i,j_inlen(i),ier)
 !      write(44,*) 'i,j_inlen(i)=',i,j_inlen(i)    !境界要素の数
        if(indexmax.lt. j_inlen(i)) indexmax= j_inlen(i)
-       call cg_iric_read_bc_string_f('b_tmp',i,'_caption',flowname(i), ier)
+       call cg_iric_read_bc_string(fid,'b_tmp',i,'_caption',flowname(i), ier)
        !境界条件要素の名前
 !      write(44,*) flowname(i)(1:30)
       end do
@@ -2235,8 +2231,8 @@
       allocate(indices(j_in, 2, indexmax))
 
       do i = 1, j_in
-       call cg_iric_read_bc_indices_f('b_tmp',i, indices(i:i,:,:), ier)
-       call cg_iric_read_bc_real_f('b_tmp', i, 'b_tmp_val', &
+       call cg_iric_read_bc_indices(fid,'b_tmp',i, indices(i:i,:,:), ier)
+       call cg_iric_read_bc_real(fid,'b_tmp', i, 'b_tmp_val', &
         boundary_tmp_value(i:i), ier)
 !      write(44,*) 'tmp=',boundary_tmp_value(i)
 !      do j=1,2
@@ -2316,10 +2312,10 @@
       indexmax_c = 0 ! max of jc_inlen(i)
 
       do i = 1, jc_in
-       call cg_iric_read_bc_indicessize_f('b_con',i,jc_inlen(i),ier)
+       call cg_iric_read_bc_indicessize(fid,'b_con',i,jc_inlen(i),ier)
 !      write(44,*) 'i,jc_inlen(i)=',i,jc_inlen(i)
        if(indexmax_c.lt. jc_inlen(i)) indexmax_c= jc_inlen(i)
-       call cg_iric_read_bc_string_f('b_con',i,'_caption',flowname_c,ier)
+       call cg_iric_read_bc_string(fid,'b_con',i,'_caption',flowname_c,ier)
 !      write(44,*) flowname_c(i)(1:50)
       end do
 
@@ -2327,8 +2323,8 @@
       allocate(indices_c(jc_in, 2, indexmax_c))
 
       do i = 1, jc_in
-       call cg_iric_read_bc_indices_f('b_con',i, indices_c(i:i,:,:), ier)
-       call cg_iric_read_bc_real_f('b_con', i, 'b_con_val', &
+       call cg_iric_read_bc_indices(fid,'b_con',i, indices_c(i:i,:,:), ier)
+       call cg_iric_read_bc_real(fid,'b_con', i, 'b_con_val', &
         boundary_con_value(i:i), ier)
 !      write(44,*) 'concentration=',boundary_con_value(i)
 !      do j=1,2
@@ -2685,25 +2681,25 @@
        do j=0,ny
         if(isnan(yu(i,j)).or.isnan(yp(i,j))) then 
          write(*,*) 'Calculation is Falure (Nan found)',time
-         call cg_close_f(fid,ier)
+         call cg_iric_close(fid,ier)
          stop
         end if
        end do
 30     if(isnan(hs(i)).or.isnan(qc(i)).or.isnan(usta(i))) then
         write(*,*) 'Calculation is Falure (Nan found)',time
-        call cg_close_f(fid,ier)
+        call cg_iric_close(fid,ier)
         stop
        end if
       end do
 
-      call iric_check_cancel_f(istatus)
+      call iric_check_cancel(istatus)
       if(istatus==1) then
        write(*,*) &
         "Solver is stopped because the STOP button was clicked."
-         call cg_close_f(fid,ier)
+         call cg_iric_close(fid,ier)
          stop
       end if
-      call cg_iric_flush_f(condFile, fid, ier)
+
 !--------------------------------------------------
       if (itt.eq.itout) then
        itt=0
