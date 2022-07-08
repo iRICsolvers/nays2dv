@@ -20,6 +20,12 @@
 *.mod
 *.smod
 
+# Visual Studio files
+*.sln
+*.u2d
+*.vfproj
+*.suo
+
 # Compiled Static libraries
 *.lai
 *.la
