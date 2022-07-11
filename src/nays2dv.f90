@@ -2233,7 +2233,7 @@
       do i = 1, j_in
        call cg_iric_read_bc_indices(fid,'b_tmp',i, indices(i:i,:,:), ier)
        call cg_iric_read_bc_real(fid,'b_tmp', i, 'b_tmp_val', &
-        boundary_tmp_value(i:i), ier)
+        boundary_tmp_value(i), ier)
 !      write(44,*) 'tmp=',boundary_tmp_value(i)
 !      do j=1,2
 !       do k=1,j_inlen(i)
@@ -2315,7 +2315,7 @@
        call cg_iric_read_bc_indicessize(fid,'b_con',i,jc_inlen(i),ier)
 !      write(44,*) 'i,jc_inlen(i)=',i,jc_inlen(i)
        if(indexmax_c.lt. jc_inlen(i)) indexmax_c= jc_inlen(i)
-       call cg_iric_read_bc_string(fid,'b_con',i,'_caption',flowname_c,ier)
+       call cg_iric_read_bc_string(fid,'b_con',i,'_caption',flowname_c(i),ier)
 !      write(44,*) flowname_c(i)(1:50)
       end do
 
@@ -2325,7 +2325,7 @@
       do i = 1, jc_in
        call cg_iric_read_bc_indices(fid,'b_con',i, indices_c(i:i,:,:), ier)
        call cg_iric_read_bc_real(fid,'b_con', i, 'b_con_val', &
-        boundary_con_value(i:i), ier)
+        boundary_con_value(i), ier)
 !      write(44,*) 'concentration=',boundary_con_value(i)
 !      do j=1,2
 !       do k=1,jc_inlen(i)
