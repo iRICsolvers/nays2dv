@@ -1431,6 +1431,7 @@
       module output_m
       use common_hh
       use common_geom
+      use iric
       implicit none
       contains
 
@@ -1510,7 +1511,7 @@
 !     write(133) ((tx(i,j),i=1,nx-1),j=0,ny)
 !     write(133) ((cx(i,j),i=1,nx-1),j=0,ny)
 
-      call cg_iric_write_sol_start(fid)
+      call cg_iric_write_sol_start(fid, ier)
       call cg_iric_write_sol_time(fid,time,ier)
       call cg_iric_write_sol_baseiterative_real(fid,"Input Discharge",qp0,ier)
       call cg_iric_write_sol_baseiterative_real(fid,"Averageed Discharge",q_ave,ier)
@@ -1541,7 +1542,7 @@
       call cg_iric_write_sol_cell_real(fid,"P_cell",p_cell,ier)
       call cg_iric_write_sol_cell_real(fid,"T_cell",t_cell,ier)
       call cg_iric_write_sol_cell_real(fid,"C_cell",c_cell,ier)
-      call cg_iric_write_sol_end(fid)
+      call cg_iric_write_sol_end(fid,ier)
       end subroutine output
       end module output_m
  
@@ -1955,8 +1956,7 @@
        write(*,*) "*** Open error of CGNS file ***"
       end if
  
-! iRIClib の初期化
-      call cg_iric_init(fid, ier)
+
 !
 !guiにcgnsファイルを読込みであることを知らせるファイルを生成
       call iric_initoption(IRIC_OPTION_CANCEL, ier)
@@ -1968,7 +1968,7 @@
 !     write(*,*) 'ni,nj=',ni,nj
 
       if (ier /=0) then
-       write(*,*) "*** error:cg_iRIC_Read_Grid2d_Str_Size_f ***"
+       write(*,*) "*** error:cg_iRIC_Read_Grid2d_Str_Size ***"
        stop
       end if
 !     
