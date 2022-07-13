@@ -1435,7 +1435,7 @@
       implicit none
       contains
 
-      subroutine output(u,v,p,t,c,h,eta_up,qc,xg,yg_bed,obst)
+      subroutine output(fid,u,v,p,t,c,h,eta_up,qc,xg,yg_bed,obst)
       real(8),dimension(0:im,0:jm)::u,v,p,t,c
       integer,dimension(0:im,0:jm)::obst
       real(8),dimension(0:im)::h,eta_up,h_up,hs_up,qc
@@ -2703,7 +2703,7 @@
 !--------------------------------------------------
       if (itt.eq.itout) then
        itt=0
-       call output(yu,yv,yp,yt,yc,h,eta_up,qc,xg,yg_bed,obst)
+       call output(fid, yu,yv,yp,yt,yc,h,eta_up,qc,xg,yg_bed,obst)
        write(*,'(a5,7f10.5)') &
            'time=',time,qp,qp0,qp1,q_ave,h_down,h_up_boundary
        write(44,'(a5,7f10.5)') &
