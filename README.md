@@ -6,7 +6,12 @@ Nays2dvは自由水面を持つ鉛直2次元流れ場とその中の密度変化
 河川河口付近の塩水遡上、ダム湖内の温度・密度流循環などに使用可能である。
 また、密度流の特性を2次元的にヴィジュアルに表現出来るので、教育用ツールとしても良いかも知れない。
 
+事例集はこちらを参照ください。
+https://i-ric.org/yasu/Nays2dv_JP/index.html
+
 ## リリースノート
+### ver.1.6.23021302
+* READMEに事例集のリンクを追加。
 ### ver.1.6.23021301
 * ライセンスを追加
 ### ver.1.7.22080301
@@ -20,7 +25,12 @@ The Nays2DV solver is developed by Professor Yasuyuki Shimizu from Hokkaido Univ
 
 Density currents occured due to density differences, arise from temperature variations, suspended solids or dissolved materials. Therefore, formation and evolution of density currents are induced by natural conditions such as saline intrusions, oil spills etc. Density flow is important for problems in lakes, reservoirs and estuaries.
 
+Check here for case studies.
+https://uc.i-ric.org/uc_products/nays2dv_tutorial/index.html
+
 ## Release notes
+### ver.1.6.23021302
+* Add case study link to README.
 ### ver.1.6.23021301
 * Add license
 ### ver.1.7.22080301
