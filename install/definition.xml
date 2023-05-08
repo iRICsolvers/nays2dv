@@ -5,7 +5,7 @@
 	caption="Nays2Dv vertical 2D model " 
 	version="1.6.23050801"
 	copyright="Yasuyuki SHIMIZU"
-	release="2022.02.13"
+	release="2023.05.08"
 	homepage="http://i-ric.org"
 	executable="nays2dv.exe"
 	iterationtype="time"
