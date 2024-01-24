@@ -21,6 +21,8 @@ Nays2Dvは自由水面を持つ鉛直2次元流れ場とその中の密度変化
 https://i-ric.org/yasu/Nays2dv_JP/index.html
 
 ## リリースノート
+### ver.1.6.24012401
+* 計算中の計算結果の読み込み機能に軽微な修正が行われました。
 ### ver.1.6.23050801
 * 名前の表記を"Nays2Dv"に修正
 ### ver.1.6.23021302
@@ -49,6 +51,8 @@ Check here for case studies.
 https://uc.i-ric.org/uc_products/nays2dv_tutorial/index.html
 
 ## Release notes
+### ver.1.6.24012401
+* Minor adjustments to the result loading function during calculations.
 ### ver.1.6.23050801
 * Corrected name notation to "Nays2Dv"
 ### ver.1.6.23021302
